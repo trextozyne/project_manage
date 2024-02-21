@@ -2,7 +2,6 @@ import {inject, Injectable} from '@angular/core';
 import {HttpClient} from "@angular/common/http";
 import {Project} from "../../models/project";
 import {map, reduce} from "rxjs/operators";
-import {Task} from "../../models/task";
 import {Tasks} from "../../models/tasks";
 import {Observable, from} from "rxjs";
 import {UserProgress} from "../../models/user-progress";

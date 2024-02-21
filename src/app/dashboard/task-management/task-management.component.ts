@@ -81,9 +81,9 @@ export class TaskManagementComponent {
         if (project.assignedTeams && project.assignedTeams.length > 0) {
           project.assignedTeams.forEach(team => {
             this.teamService.getTeamMembers(team.teamId).pipe(first()).subscribe((team: Team) => {
-              this.teamService.getTeamUsers(team.members).pipe(first()).subscribe((user: User[]) => {
-                user.map(user => userImages.push(user.imagePath));
-              })
+              this.teamService.getTeamUsers(team.members).pipe(first()).subscribe((user: User[]) =>
+                user.map(user => userImages.push(user.imagePath))
+              )
             })
             console.log("images:", userImages);
           })
@@ -107,9 +107,7 @@ export class TaskManagementComponent {
     return _taskByUser;
   });
 
-  ngOnInit() {
-
-  }
+  ngOnInit() {}
 
   constructor() {
     effect((onCleanup)=> {

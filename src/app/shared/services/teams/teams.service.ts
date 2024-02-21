@@ -1,11 +1,10 @@
 import {inject, Injectable} from '@angular/core';
 import {HttpClient} from "@angular/common/http";
-import {Users, UsersService} from "../users/users.service";
-import {from, of} from "rxjs";
+import {UsersService} from "../users/users.service";
+import {of} from "rxjs";
 import {map, mergeAll, mergeMap, toArray} from "rxjs/operators";
 import {User} from "../../models/user";
 import {Team} from "../../models/team";
-import {Projects} from "../projects/projects.service";
 
 export interface Teams {
   teams: Team[];
@@ -31,11 +30,11 @@ export class TeamsService {
     );
   }
 
-  getTeamUsers(members: any[]) {
+  getTeamUsers(members: { userId: any }[]) {
     return of(members).pipe(
-      mergeAll(), // flatten to Observable<Person>
-      mergeMap((p: any) =>
-        this.userService.getUserById(p).pipe(map((user: User) => ({ ...user})))// back to Observable<User[]>
+      mergeAll(), // flatten to Observable<Something>
+      mergeMap((p: { userId: any }) =>
+        this.userService.getUserById(p.userId).pipe(map((user: User) => ({ ...user})))// back to Observable<User[]>
       ),
       toArray()
     );

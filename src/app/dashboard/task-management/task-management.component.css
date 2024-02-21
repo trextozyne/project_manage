@@ -1,0 +1,5 @@
+
+/* task-management.component.css */
+:host {
+  display: contents; /* or any other display value you want */
+}

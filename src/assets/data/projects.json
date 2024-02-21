@@ -1,0 +1,229 @@
+{
+  "projects": [
+    {
+      "projectId": 1,
+      "name": "Web Designing",
+      "startDate": "2024-02-10",
+      "endDate": "2024-03-01",
+      "tasks": [
+        {
+          "taskId": 1,
+          "name": "Prototyping",
+          "task": [
+            {
+              "id": 1,
+              "stage": "Scope Definition",
+              "completed": true,
+              "points": 1,
+              "dateCreated": "2024-02-15"
+            },
+            {
+              "id": 2,
+              "stage": "Research",
+              "completed": true,
+              "points": 1,
+              "dateCreated": "2024-02-15"
+            },
+            {
+              "id": 3,
+              "stage": "Sketch",
+              "completed": false,
+              "points": 1,
+              "dateCreated": "2024-02-15"
+            },
+            {
+              "id": 4,
+              "stage": "Design",
+              "completed": true,
+              "points": 1,
+              "dateCreated": "2024-02-15"
+            },
+            {
+              "id": 5,
+              "stage": "Feedback",
+              "completed": true,
+              "points": 1,
+              "dateCreated": "2024-02-15"
+            },
+            {
+              "id": 6,
+              "stage": "Refinement",
+              "completed": true,
+              "points": 1,
+              "dateCreated": "2024-02-15"
+            },
+            {
+              "id": 7,
+              "stage": "Development",
+              "completed": false,
+              "points": 1,
+              "dateCreated": "2024-02-15"
+            }
+          ]
+        }
+      ],
+      "progressType": {
+        "User-Defined": false,
+        "Weighted": false,
+        "Time-Based": false,
+        "Task": true
+      },
+      "assignedUsers": [
+        {
+          "userId": 3
+        }
+      ],
+      "assignedTeams": [
+        {
+          "teamId": 1,
+          "completedOnDueDate": false,
+          "completed": false,
+          "unassign": false
+        }
+      ],
+      "userProgress": [
+        {
+          "userId": 1,
+          "taskId": 1,
+          "task": [
+            {
+              "id": 1,
+              "dateAssigned": "2024-02-15"
+            },
+            {
+              "id": 2,
+              "dateAssigned": "2024-02-15"
+            },
+            {
+              "id": 3,
+              "dateAssigned": "2024-02-15"
+            }
+          ],
+          "completedTasks": 2,
+          "totalTasks": 3,
+          "progressPercentage": 66.67
+        },
+        {
+          "userId": 2,
+          "taskId": 1,
+          "task": [
+            {
+              "id": 4,
+              "dateAssigned": "2024-02-15"
+            },
+            {
+              "id": 5,
+              "dateAssigned": "2024-02-15"
+            },
+            {
+              "id": 6,
+              "dateAssigned": "2024-02-15"
+            },
+            {
+              "id": 7,
+              "dateAssigned": "2024-02-15"
+            }
+          ],
+          "completedTasks": 3,
+          "totalTasks": 4,
+          "progressPercentage": 75
+        }
+      ],
+      "completed": false
+    },
+    {
+      "projectId": 2,
+      "name": "App Development",
+      "startDate": "2024-03-01",
+      "endDate": "2024-03-20",
+      "tasks": [
+        {
+          "taskId": 1,
+          "name": "Backend Development",
+          "task": [
+            {
+              "id": 1,
+              "stage": "Requirements Analysis",
+              "completed": false,
+              "points": 1,
+              "dateCreated": "2024-03-01"
+            },
+            {
+              "id": 2,
+              "stage": "Database Design",
+              "completed": false,
+              "points": 1,
+              "dateCreated": "2024-03-01"
+            },
+            {
+              "id": 3,
+              "stage": "API Development",
+              "completed": false,
+              "points": 1,
+              "dateCreated": "2024-03-01"
+            },
+            {
+              "id": 4,
+              "stage": "Unit Testing",
+              "completed": false,
+              "points": 1,
+              "dateCreated": "2024-03-01"
+            }
+          ]
+        }
+      ],
+      "progressType": {
+        "User-Defined": false,
+        "Weighted": false,
+        "Time-Based": false,
+        "Task": true
+      },
+      "assignedUsers": [],
+      "assignedTeams": [
+        {
+          "teamId": 2,
+          "completedOnDueDate": false,
+          "completed": false,
+          "unassign": false
+        }
+      ],
+      "userProgress": [
+        {
+          "userId": 4,
+          "taskId": 1,
+          "task": [
+            {
+              "id": 1,
+              "dateAssigned": "2024-03-01"
+            },
+            {
+              "id": 2,
+              "dateAssigned": "2024-03-01"
+            }
+          ],
+          "completedTasks": 1,
+          "totalTasks": 2,
+          "progressPercentage": 50
+        },
+        {
+          "userId": 4,
+          "taskId": 1,
+          "task": [
+            {
+              "id": 3,
+              "dateAssigned": "2024-03-01"
+            },
+            {
+              "id": 4,
+              "dateAssigned": "2024-03-01"
+            }
+          ],
+          "completedTasks": 0,
+          "totalTasks": 2,
+          "progressPercentage": 0
+        }
+      ],
+      "completed": false
+    }
+  ]
+}

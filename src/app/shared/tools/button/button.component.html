@@ -1,0 +1,12 @@
+
+<button (click)="onClick.emit($event)"
+        [class.add-participant]="addParticipant"
+        [class.project-btn-more]="btnMore"
+        [class.view-btn]="viewBtn"
+        [class.list-view]="list"
+        [class.grid-view]="grid"
+        [class.active]="active"
+        [attr.title]="title"
+        [style.color]="color">
+  <ng-content></ng-content>
+</button>

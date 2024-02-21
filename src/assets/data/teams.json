@@ -1,0 +1,21 @@
+
+{
+  "teams": [
+    {
+      "teamId": 1,
+      "name": "Design Team",
+      "members": [
+        1,
+        2
+      ]
+    },
+    {
+      "teamId": 2,
+      "name": "Coding Team",
+      "members": [
+        3,
+        4
+      ]
+    }
+  ]
+}

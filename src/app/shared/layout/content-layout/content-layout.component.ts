@@ -1,6 +1,7 @@
-import {Component, CUSTOM_ELEMENTS_SCHEMA} from '@angular/core';
+import {Component, ComponentRef, CUSTOM_ELEMENTS_SCHEMA} from '@angular/core';
 import {CommonModule} from "@angular/common";
 import {RouterModule, RouterOutlet} from "@angular/router";
+
 
 @Component({
   selector: 'app-content-layout',

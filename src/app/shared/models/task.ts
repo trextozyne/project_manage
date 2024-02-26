@@ -1,7 +1,7 @@
 
 
 // task.model.ts
-export interface Task {
+export interface Task {//subtask
   id: any;
   stage: string;
   completed: boolean;

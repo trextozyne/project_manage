@@ -1,5 +1,6 @@
 
 <button (click)="onClick.emit($event)"
+        [class.no-bg-border]="noBgBorder()"
         [class.add-participant]="addParticipant"
         [class.project-btn-more]="btnMore"
         [class.view-btn]="viewBtn"

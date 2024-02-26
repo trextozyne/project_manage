@@ -1,0 +1,79 @@
+
+:host {
+  width: 100%; /* or any other display value you want */
+  height: 100%;
+}
+
+/* --------------Ripple Animation -------------*/
+@keyframes ripple {
+  to {
+    transform: scale(5);
+    opacity: 0;
+  }
+}
+
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  transform: scale(0);
+  animation: ripple 0.6s linear;
+  background-color: rgba(169, 169, 169, 0.5);
+  pointer-events: none;
+}
+
+/* --------------border Animation -------------*/
+@keyframes borderBottomSpan {
+  0% {
+    width: 0;
+    opacity: 1;
+  }
+  70% {
+    width: 100%;
+    opacity: 1;
+    border-bottom: 2px solid black;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.borderBottomSpan {
+  margin-top: 2px;
+  position: absolute;
+  bottom: 0;
+  animation: borderBottomSpan 0.6s linear;
+  pointer-events: none;
+}
+/* --------------border Animation -------------*/
+
+.img-list {
+  height: 100%;
+  position: relative;
+  top: -50px;
+  padding-top: 35px;
+  overflow-y: auto; /* Enable vertical scrolling */
+}
+
+.projectUser {
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  align-items: center;
+  padding: 2px 0;
+}
+
+.projectUser:hover {
+  /*transition: 0.3s width;*/
+  /*border-bottom: 2px solid rgba(62, 61, 61, 0.44);*/
+}
+
+.projectUser Img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  -o-object-fit: cover;
+  object-fit: cover;
+  max-width: 100%;
+}

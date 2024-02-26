@@ -4,4 +4,4 @@
   <span class="box-progress" [ngStyle]="{'max-width.%': width}" style="background-color: #ff942e"></span>
 </div>
 
-<p class="box-progress-percentage">{{progress_count()}}%</p>
+<p class="box-progress-percentage">{{progress_count() | number: '1.2-2'}}%</p>

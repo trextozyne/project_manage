@@ -1,4 +1,4 @@
-import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {Component, EventEmitter, input, Input, Output} from '@angular/core';
 
 @Component({
   selector: 'app-button',
@@ -8,6 +8,7 @@ import {Component, EventEmitter, Input, Output} from '@angular/core';
   styleUrl: './button.component.css'
 })
 export class ButtonComponent {
+  noBgBorder = input<boolean>(false);
   @Input() color: any;
   @Input() addParticipant: boolean = false;
   @Input() btnMore:  boolean = false;

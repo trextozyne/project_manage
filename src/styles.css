@@ -905,3 +905,6 @@ span {
 /*div {*/
 /*  margin: 10px; !* Set a default margin for divs *!*/
 /*}*/
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }

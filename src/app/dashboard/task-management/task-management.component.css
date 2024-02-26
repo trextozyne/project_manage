@@ -3,3 +3,112 @@
 :host {
   display: contents; /* or any other display value you want */
 }
+
+span {
+  font-weight: 400 !important;
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgb(173 173 173 / 27%);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+}
+
+.bottomSheet {
+  position: fixed;
+  bottom: -100%;
+  left: 50%; /* Center horizontally */
+  transform: translateX(-50%); /* Center horizontally */
+  width: 45%; /* Set width to 45% */
+  height: 33%;
+  /*padding-top: 20px; !* Add padding to the top *!*/
+  background: #fff;
+  transition: 0.3s;
+  box-shadow: 0 0 20px 6px rgb(111 106 106 / 31%);
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  align-items: center;
+  z-index: 1;
+}
+
+.bottomSheet div {
+  width: 100%;
+}
+
+
+/*----------------TABS-------------------*/
+.tabs {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  border-bottom: 1px solid #ccc;
+  margin-bottom: 10px;
+  background: inherit;
+  z-index: 1;
+}
+
+.tab {
+  flex: 1;
+  text-align: center;
+  padding: 10px 20px;
+  cursor: pointer;
+  border-radius: 5px 5px 0 0;
+  border: none;
+}
+
+.tab:hover {
+  background-color: rgba(224, 224, 224, 0.47);
+}
+
+.active {
+  border-bottom: 2px solid #007bff;
+  color: #007bff;
+}
+
+/* Mobile View: max-width 980px */
+@media screen and (max-width: 980px) {
+  .bottomSheet {
+    width: 60%;
+  }
+}
+
+/* Mobile View: max-width 880px */
+@media screen and (max-width: 880px) {
+  .bottomSheet {
+    width: 70%;
+  }
+}
+
+/* Mobile View: max-width 720px */
+@media screen and (max-width: 720px) {
+  .bottomSheet {
+    width: 80%;
+  }
+
+  /*.tabs {*/
+  /*  flex-direction: column;*/
+  /*  align-items: flex-start;*/
+  /*}*/
+
+  /*.tab {*/
+  /*  width: 100%;*/
+  /*  text-align: left;*/
+  /*  border-radius: 0;*/
+  /*}*/
+}
+
+/* Mobile View: max-width 520px */
+@media screen and (max-width: 520px) {
+  .bottomSheet {
+    width: 90%;
+  }
+}

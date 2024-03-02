@@ -2,8 +2,9 @@
 <div class="img-list">
   <mat-list role="list">
     @for (userData of getAddImage(); track userData.id) {
-          <mat-list-item role="listitem" style="padding: 0">
-            <div appBorderBottomEffect appRippleEffect class="projectUser">
+          <mat-list-item role="listitem" style="height: auto; padding: 2px">
+            <div appBorderBottomEffect appRippleEffect
+            class="projectUser" (click)="onUserClick(userData, $event)">
               <img [src]="userData.img" alt="projectUser">
             </div>
           </mat-list-item>

@@ -1,13 +1,20 @@
 
-<button (click)="onClick.emit($event)"
-        [class.no-bg-border]="noBgBorder()"
-        [class.add-participant]="addParticipant"
-        [class.project-btn-more]="btnMore"
-        [class.view-btn]="viewBtn"
-        [class.list-view]="list"
-        [class.grid-view]="grid"
-        [class.active]="active"
-        [attr.title]="title"
-        [style.color]="color">
+<button
+  appRandomBackgroundStyle [isColor]="true"
+  (click)="onClick.emit($event)"
+  [class.mode-switch]="modeSwitch()"
+  [class.add-pjt-btn]="addPjtBtn()"
+  [class.notification-btn]="notificationBtn()"
+  [class.profile-btn]="profileBtn()"
+  [class.messages-btn]="messagesBtn()"
+  [class.no-bg-border]="noBgBorder()"
+  [class.add-participant]="participant()"
+  [class.project-btn-more]="btnMore()"
+  [class.view-btn]="viewBtn()"
+  [class.list-view]="list()"
+  [class.grid-view]="grid()"
+  [class.active]="active()"
+  [attr.title]="title()">
+<!--  [style.color]="color()"-->
   <ng-content></ng-content>
 </button>

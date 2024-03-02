@@ -11,10 +11,9 @@
 <div #bottomSheet class="bottomSheet">
   <div class="tabs">
     <div class="tab" [class.active]="isTeamMember" (click)="toggleTab()">Team</div>
-    <div class="tab" [class.active]="isExtraUser" (click)="toggleTab()">User</div>
+    <div class="tab" [class.active]="!isTeamMember" (click)="toggleTab()">User</div>
   </div>
   <div #bottomSheetData></div>
-  <app-button (onClick)="closeBottomSheet()">Close</app-button>
 </div>
 
 
@@ -45,7 +44,7 @@
     </div>
   </div>
   <div class="view-actions">
-    <app-button [viewBtn]="true" [list]="true" [title]="'List View'">
+    <app-button [viewBtn]="true" [list]="true" [active]="!isGridView" [title]="'List View'" (onClick)="setListView($event)">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-list">
         <line x1="8" y1="6" x2="21" y2="6" />
         <line x1="8" y1="12" x2="21" y2="12" />
@@ -54,7 +53,7 @@
         <line x1="3" y1="12" x2="3.01" y2="12" />
         <line x1="3" y1="18" x2="3.01" y2="18" /></svg>
     </app-button>
-    <app-button [viewBtn]="true" [grid]="true" [active]="true" [title]="'Grid View'">
+    <app-button [viewBtn]="true" [grid]="true" [active]="isGridView" [title]="'Grid View'" (onClick)="setGridView($event)">
       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-grid">
         <rect x="3" y="3" width="7" height="7" />
         <rect x="14" y="3" width="7" height="7" />
@@ -65,8 +64,8 @@
 </div>
 
 <!--===============Project Tasks Display================-->
-<div class="project-boxes jsGridView">
-  @for (userData of taskByUser(); track userData.project$) {
+<div class="project-boxes jsGridView" #projectBoxes>
+  @for (userData of taskByUser(); track userData.project$; let index = $index) {
     <app-task-containers>
       <div class="project-box-header">
         <span>{{ userData.projectTask?.startDate | fullDatePipe }}</span>
@@ -89,20 +88,23 @@
       </div>
       <div class="project-box-footer">
         <div class="participants">
+          <app-button [color]="'#ff942e'" [participant]="true" (onClick)="onRemoveParticipants(index, userData.project$?.projectId, userData.userImageData, $event)">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="feather feather-minus">
+              <path d="M5 12h14" />
+          </svg>
+          </app-button>
           <div class="contain-participants">
-            <app-button [noBgBorder]="true" (onClick)="onRemoveParticipants(userData.userImageData, $event)">
               @for (image of userData.userImageData; track image.img) {
                 <img [src]="image.img" alt="participant">
               }
-            </app-button>
           </div>
-          <app-button [color]="'#ff942e'" [addParticipant]="true" (onClick)="onAddParticipants(userData.userImageData, $event)">
+          <app-button [color]="'#ff942e'" [participant]="true" (onClick)="onAddParticipants(index, userData.project$?.projectId, userData.userImageData, $event)">
             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="feather feather-plus">
               <path d="M12 5v14M5 12h14" />
             </svg>
           </app-button>
         </div>
-        <div class="days-left" style="color: #ff942e;">
+        <div class="days-left" appRandomBackgroundStyle [isColor]="true" [isStart]="true">
           {{ userData.projectTask?.endDate | daysleft }}
         </div>
       </div>

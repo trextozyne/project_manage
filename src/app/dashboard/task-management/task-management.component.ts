@@ -3,8 +3,8 @@ import {
   ComponentRef,
   computed,
   effect,
-  ElementRef,
-  inject,
+  ElementRef, HostListener,
+  inject, Renderer2,
   signal,
   ViewChild,
   ViewContainerRef
@@ -26,7 +26,8 @@ import {first} from "rxjs/operators";
 import {FullDatePipePipe} from "../../shared/pipes/full-date-pipe.pipe";
 import {DaysleftPipe} from "../../shared/pipes/daysleft.pipe";
 import {ListDataWrapperComponent} from "../../shared/tools/containers/list-containers/list-data-wrapper/list-data-wrapper.component";
-import {toSignal} from "@angular/core/rxjs-interop";
+import {RandomBackgroundStyleDirective} from "../../shared/Directives/random-background-style.directive";
+
 
 
 //Strong Type the ViewContainerRef Create s typed ComponentRef
@@ -38,17 +39,22 @@ abstract class TypedComponentRef<ComponentClass> extends ComponentRef<ComponentC
   selector: 'app-task-management',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, ProgressBarComponent, DaysleftPipe,
-    TaskContainersComponent, ButtonComponent, DaymonthpipePipe, FullDatePipePipe],
+    TaskContainersComponent, ButtonComponent, DaymonthpipePipe, FullDatePipePipe,
+    RandomBackgroundStyleDirective],
   templateUrl: './task-management.component.html',
   styleUrl: './task-management.component.css'
 })
 export class TaskManagementComponent {
+
+  @ViewChild("projectBoxes", {static: true}) projectBoxes!: ElementRef;
+  isGridView: boolean = true;
+
+  renderer = inject(Renderer2);
   projectService = inject(ProjectsService);
   userService = inject(UsersService);
   teamService = inject(TeamsService);
 
   isTeamMember: boolean = true;
-  isExtraUser: boolean = false;
 
   @ViewChild('bottomSheetData', { read: ViewContainerRef }) bottomSheet!: ViewContainerRef;
   private listDataComponent!: TypedComponentRef<ListDataWrapperComponent>;
@@ -109,7 +115,7 @@ export class TaskManagementComponent {
         if (project.assignedUsers && project.assignedUsers.length > 0) {
           project.assignedUsers.forEach(user => {
             this.userService.getUserById(user.userId).pipe(first()).subscribe((user: User) => {
-              userImageData.push({id: user.id, img: '/assets/images/' + user.imagePath});
+              userImageData.push({id: user.id, isAssignedToTeam: false, img: '/assets/images/' + user.imagePath});
             });
           })
         }
@@ -117,7 +123,7 @@ export class TaskManagementComponent {
           project.assignedTeams.forEach(team => {
             this.teamService.getTeamMembers(team.teamId).pipe(first()).subscribe((team: Team) => {
               this.teamService.getTeamUsers(team.members).pipe(first()).subscribe((user: User[]) =>
-                user.map(user => userImageData.push({id: user.id, img: '/assets/images/' + user.imagePath}))
+                user.map(user => userImageData.push({id: user.id, isAssignedToTeam: true, img: '/assets/images/' + user.imagePath}))
               )
             })
             console.log("images:", userImageData);
@@ -165,27 +171,68 @@ export class TaskManagementComponent {
     })
   }
 
-  onRemoveParticipants(userImageData: {id: any, img: string}, $event: MouseEvent) {
-    //should be able to remove team member/extra user
-  }
-
-  onAddParticipants(userImageData: {id: any, img: string}[], $event: MouseEvent) {
-    // there should be a tab for add to team, add as extra
-    // code any removal from team updates team db, removal from extra updates project db "assignedUser"
+  private createListComponent(isAddUser: boolean, projectId: any, userImageData: { id: any; isAssignedToTeam: boolean; img: string }[]) {
     this.listDataComponent = this.bottomSheet.createComponent(ListDataWrapperComponent);
+    this.listDataComponent.instance.isAddUser.set(isAddUser);
+    this.listDataComponent.instance.projectId.set(projectId);
+    this.listDataComponent.instance.isUserToTeam.set(this.isTeamMember);
     this.listDataComponent.instance.getData().length = 0;
     this.listDataComponent.instance.getData().push(...userImageData);
     this.listDataComponent.instance.projects().push(...this.projects());
     this.listDataComponent.instance.users().push(...this.users());
-    //this.listDataComponent.setInput("users", this.users());
-    //this.listDataComponent.instance.
-    //this.projects.set()
+  }
+
+  onRemoveParticipants(index: number, projectId: any, userImageData: {id: any, isAssignedToTeam: boolean, img: string}[], $event: MouseEvent) {
+    //should be able to remove team member/extra user
+    this.createListComponent(false, projectId, userImageData);
+
+    if (this.listDataComponent)
+      this.listDataComponent.instance.emitChosenUser.pipe(first()).subscribe((userData: {id: any, isAssignedToTeam: boolean, img: string}) => {
+        console.log(userData)
+        this.taskByUser().at(index).userImageData =
+          this.taskByUser().at(index).userImageData.filter((userInfo: {id: any, isAssignedToTeam: boolean, img: string}) => userInfo.id !== userData.id);
+
+        //if (userData) this.users.set(users.users);
+        this.closeBottomSheet()
+      });
 
     this.overlay.nativeElement.style.display = 'flex';
     this._bottomSheet.nativeElement.style.bottom = '0';
 
     console.log($event);
     $event.preventDefault();
+  }
+
+  onAddParticipants(index: number, projectId: any, userImageData: {id: any, isAssignedToTeam: boolean, img: string}[], $event: MouseEvent) {
+    // there should be a tab for add to team, add as extra
+    // code any removal from team updates team db, removal from extra updates project db "assignedUser"
+    this.createListComponent(true, projectId, userImageData);
+
+    if (this.listDataComponent)
+      this.listDataComponent.instance.emitChosenUser.pipe(first()).subscribe((userData: {id: any, img: string}) => {
+        console.log(userData)
+        this.taskByUser().at(index).userImageData.push(userData);
+
+        //if (userData) this.users.set(users.users);
+        this.closeBottomSheet()
+      });
+    //this.listDataComponent.setInput("users", this.users());
+    //this.listDataComponent.instance.
+    //this.projects.set()
+    //noBgBorder: InputSignal<boolean>  = input<boolean>(false);
+
+    this.overlay.nativeElement.style.display = 'flex';
+    this._bottomSheet.nativeElement.style.bottom = '0';
+
+    console.log($event);
+    $event.preventDefault();
+  }
+
+  @HostListener('document:click', ['$event'])
+  onClickOutside(event: MouseEvent): void {
+    debugger;
+    if ((event.target as HTMLElement).classList.contains('overlay'))
+      this.closeBottomSheet();
   }
 
   closeBottomSheet() {
@@ -203,11 +250,27 @@ export class TaskManagementComponent {
 
   toggleTab(){
     this.isTeamMember = !this.isTeamMember;
-    this.isExtraUser = !this.isTeamMember
+    this.listDataComponent.instance.isUserToTeam.set(this.isTeamMember);
 
     if (this.isTeamMember)
       console.log('team')
     else
       console.log('user')
+  }
+
+  setGridView($event: MouseEvent) {
+    this.isGridView = true;
+    if (this.projectBoxes) {
+      this.renderer.addClass(this.projectBoxes.nativeElement, 'jsGridView');
+      this.renderer.removeClass(this.projectBoxes.nativeElement, 'jsListView');
+    }
+  }
+
+  setListView($event: MouseEvent) {
+    this.isGridView = false;
+    if (this.projectBoxes) {
+      this.renderer.removeClass(this.projectBoxes.nativeElement, 'jsGridView');
+      this.renderer.addClass(this.projectBoxes.nativeElement, 'jsListView');
+    }
   }
 }

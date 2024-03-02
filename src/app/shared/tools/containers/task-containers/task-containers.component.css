@@ -1,4 +1,10 @@
 
-:host {
-  display: contents; /* or any other display value you want */
+.project-boxes.jsGridView :host {
+  display: contents;
+}
+
+.project-boxes.jsListView :host {
+  display: inline-block;
+  width: 100%;
+  width: -webkit-fill-available;
 }

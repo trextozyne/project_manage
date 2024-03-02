@@ -1,10 +1,13 @@
 import {Component, input, Input} from '@angular/core';
 import {CommonModule} from "@angular/common";
+import {FullDatePipePipe} from "../../pipes/full-date-pipe.pipe";
+import {ProgressCountModifierPipe} from "../../pipes/progress-count-modifier.pipe";
+import {RandomBackgroundStyleDirective} from "../../Directives/random-background-style.directive";
 
 @Component({
   selector: 'app-progress-bar',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ProgressCountModifierPipe, RandomBackgroundStyleDirective],
   templateUrl: './progress-bar.component.html',
   styleUrl: './progress-bar.component.css'
 })

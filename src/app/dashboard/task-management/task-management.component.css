@@ -74,7 +74,7 @@ span {
   color: #007bff;
 }
 
-/* Mobile View: max-width 980px */
+/*---- Mobile View: max-width 980px ---*/
 @media screen and (max-width: 980px) {
   .bottomSheet {
     width: 60%;

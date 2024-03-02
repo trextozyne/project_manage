@@ -5,6 +5,7 @@ import {catchError, map, reduce} from "rxjs/operators";
 import {Tasks} from "../../models/tasks";
 import {Observable, from, ReplaySubject} from "rxjs";
 import {UserProgress} from "../../models/user-progress";
+import {User} from "../../models/user";
 
 export interface Projects {
   projects: Project[];
@@ -92,5 +93,21 @@ export class ProjectsService {
         };
       })
     )
+  }
+
+  addUserToAssignedTeams(id: any) {
+    console.log("added to team for projectId", id)
+  }
+
+  addUserToAssignedUsers(id: any) {
+    console.log("added to single-user for projectId", id)
+  }
+
+  removeUserFromAssignedTeams(id: any) {
+    console.log("removed from team for projectId", id)
+  }
+
+  removeUserFromAssignedUsers(id: any) {
+    console.log("removed from single-user for projectId", id)
   }
 }

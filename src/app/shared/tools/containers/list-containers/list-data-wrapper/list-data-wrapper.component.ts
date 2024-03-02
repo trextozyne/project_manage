@@ -1,14 +1,15 @@
-import {Component, computed, effect, inject, input, Input, signal, SimpleChanges} from '@angular/core';
+import {Component, computed, EventEmitter, inject, input, Output, signal} from '@angular/core';
 import {MatListModule} from "@angular/material/list";
 import {CommonModule} from "@angular/common";
-import {toObservable, toSignal} from "@angular/core/rxjs-interop";
-import {map, switchMap} from "rxjs/operators";
-import {Users, UsersService} from "../../../../services/users/users.service";
-import {Projects, ProjectsService} from "../../../../services/projects/projects.service";
+import {UsersService} from "../../../../services/users/users.service";
+import {ProjectsService} from "../../../../services/projects/projects.service";
 import {Project} from "../../../../models/project";
 import {User} from "../../../../models/user";
 import {RippleEffectDirective} from "../../../../Directives/ripple-effect.directive";
 import {BorderBottomEffectDirective} from "../../../../Directives/border-bottom-effect.directive";
+import {first, map, switchMap} from "rxjs/operators";
+import {of} from "rxjs";
+import {toObservable} from "@angular/core/rxjs-interop";
 
 @Component({
   selector: 'app-list-data-wrapper',
@@ -23,19 +24,55 @@ export class ListDataWrapperComponent {
 
   projects = input<Project[]>([]);
   users = input<User[]>([]);
-  //@Input() getData!: { id: any; img: string }[];
 
-  getData = input<{ id: any; img: string }[]>([]);
+
+  getData = input<{ id: any; isAssignedToTeam: boolean; img: string }[]>([]);
+
+  projectId = signal<any>(undefined)
+
+  isUserToTeam = signal<boolean>(true);
+
+  isAddUser = signal<boolean>(true);
+
+  @Output() emitChosenUser: EventEmitter<{id: any, isAssignedToTeam: boolean, img: string}> = new EventEmitter<{id: any, isAssignedToTeam: boolean, img: string}>()
 
   getAddImage = computed(() => {
-    console.log("listi", this.users())
-    return this.users().filter((user)=> !this.getData()?.some((userData) => user.id === userData.id))
-      .map((user: User) => ({id: user.id, img: '/assets/images/' + user.imagePath}));
+
+    //for remove user ops, return the getData and shuffle based on tab click isAssingedTeam/user,
+    //set in map this.isAssignedToTeam to true or false based on tab select
+    return this.isAddUser()
+      ?
+      this.users().filter((user)=> !this.getData()?.some((userData) => user.id === userData.id))
+      .map((user: User) => ({id: user.id, isAssignedToTeam: this.isUserToTeam(), img: '/assets/images/' + user.imagePath}))
+      :
+      this.isUserToTeam()
+      ?
+      this.getData().filter(userData => userData.isAssignedToTeam)
+      :
+      this.getData().filter(userData => !userData.isAssignedToTeam);
   })
 
   constructor() {  }
 
-  openLink(event: MouseEvent): void {
+  onUserClick(userData: {id: any, isAssignedToTeam: boolean, img: string}, event: MouseEvent): void {
+    this.emitChosenUser.emit(userData);
+
+    const projectId$ = of(this.projectId());
+    console.log("isUserToTeam", this.isUserToTeam())
+    //if is add user to team fxn else remove user from team func
+    //send changes to service to add user changes to Team or Single User
+    if (this.isAddUser())
+      if (this.isUserToTeam())
+        projectId$.pipe(first()).subscribe(id => this.projectService.addUserToAssignedTeams(id));
+      else
+        projectId$.pipe(first()).subscribe(id => this.projectService.addUserToAssignedUsers(id));
+    else
+      if (this.isUserToTeam())
+        projectId$.pipe(first()).subscribe(id => this.projectService.removeUserFromAssignedTeams(id));
+      else
+        projectId$.pipe(first()).subscribe(id => this.projectService.removeUserFromAssignedUsers(id));
+
+
     event.preventDefault();
   }
 }

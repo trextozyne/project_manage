@@ -1,7 +1,10 @@
 
 
 <div class="box-progress-bar">
-  <span class="box-progress" [ngStyle]="{'max-width.%': width}" style="background-color: #ff942e"></span>
+  <span class="box-progress" [ngStyle]="{'max-width.%': width}"
+        appRandomBackgroundStyle [isColor]="true" [isBgColor]="true"></span>
 </div>
 
-<p class="box-progress-percentage">{{progress_count() | number: '1.2-2'}}%</p>
+<p class="box-progress-percentage">
+  {{progress_count() | number: '1.2-2' | progressCountModifier}}%
+</p>

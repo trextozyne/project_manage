@@ -4,7 +4,7 @@ import {
   computed,
   effect,
   ElementRef, HostListener,
-  inject, Renderer2,
+  inject, input, Renderer2,
   signal,
   ViewChild,
   ViewContainerRef
@@ -14,15 +14,15 @@ import {ReactiveFormsModule} from "@angular/forms";
 import {ProgressBarComponent} from "../../shared/tools/progress-bar/progress-bar.component";
 import {TaskContainersComponent} from "../../shared/tools/containers/task-containers/task-containers.component";
 import {ButtonComponent} from "../../shared/tools/button/button.component";
-import {Projects, ProjectsService} from "../../shared/services/projects/projects.service";
+import {Projects, ProjectsService, taskPerUser} from "../../shared/services/projects/projects.service";
 import {Project} from "../../shared/models/project";
 import {DaymonthpipePipe} from "../../shared/pipes/daymonthpipe.pipe";
 import {Users, UsersService} from "../../shared/services/users/users.service";
 import {User} from "../../shared/models/user";
-import {Observable} from "rxjs";
+import {Observable, from} from "rxjs";
 import {TeamsService} from "../../shared/services/teams/teams.service";
 import {Team} from "../../shared/models/team";
-import {first} from "rxjs/operators";
+import {first, map, switchMap} from "rxjs/operators";
 import {FullDatePipePipe} from "../../shared/pipes/full-date-pipe.pipe";
 import {DaysleftPipe} from "../../shared/pipes/daysleft.pipe";
 import {ListDataWrapperComponent} from "../../shared/tools/containers/list-containers/list-data-wrapper/list-data-wrapper.component";
@@ -101,10 +101,13 @@ export class TaskManagementComponent {
     const _taskByUser: any[] = [];
     if (this.projects().length) {
       this.projects().forEach((project: Project) => {
+        const taskPerUser: taskPerUser[] = [];
+
         const userObj = {
           project$: undefined as any,
           projectTask: undefined as any,
           userTask: [] as any[],
+          taskPerUser: [] as any[],
           userImageData: [] as any[],
           progress: {} as Record<string, any>
         };
@@ -132,6 +135,7 @@ export class TaskManagementComponent {
         this.projectService.getUserProgress(project.userProgress).pipe(first()).subscribe(($projectProgress: { totalCompletedTasks: number, totalTasks: number, progressPercentage: number }) => {
           projectProgress = $projectProgress;
         })
+
         project.userProgress.forEach(user => {
           this.projectService.getProjectById(project.projectId).pipe(first()).subscribe(($project: Project | undefined) => {
             userObj.project$ = $project
@@ -141,17 +145,54 @@ export class TaskManagementComponent {
           userObj.projectTask = {name: projectTask?.name, startDate: projectTask?.startDate, endDate: projectTask?.endDate}
 
           userObj.userTask.push(...this.projectService.getUserLevelTask(project.tasks, user.task));
+
+          taskPerUser.push(
+            ...this.projectService.getTaskPerUser(project.tasks, user)
+          );
         })
+
+        userObj.taskPerUser = this.consolidateUsersAssignedWithTaskOrWithoutTask(taskPerUser, userImageData);
+
         userObj.userImageData = userImageData
         userObj.progress = projectProgress
         _taskByUser.push(userObj)
       })
     }
+
     console.log("taskByUser", _taskByUser)
     return _taskByUser;
   });
 
-  ngOnInit() {}
+  private consolidateUsersAssignedWithTaskOrWithoutTask(tasksPerUser: taskPerUser[], currentUserData: any[]) {
+    // Extract ids
+    const taskPerUserIds = new Set(tasksPerUser.map((user: taskPerUser) => user.id));
+
+    // Find ids in currentUserData that are not in tasksPerUser
+    const idsToAdd = currentUserData
+      .filter((user: User) => !taskPerUserIds.has(user.id))
+      .map((user: User) => user.id);
+
+    // Add missing ids to tasksPerUser with empty properties
+    from(idsToAdd).pipe(
+        switchMap(id => this.userService.getUserById(id)
+        ),
+        map((user: User) => user)
+      ).subscribe(data => {
+        tasksPerUser.push({
+          id: data.id,
+          name: data.name,
+          imgPath: '/assets/images/' + data.imagePath,
+          userTask: [],
+          completedTasks: 0,
+          totalTasks: 0,
+          progressPercentage: 0
+        });
+    })
+
+    return tasksPerUser;
+  }
+
+    ngOnInit() {}
 
   constructor() {
     effect((onCleanup)=> {
@@ -186,12 +227,17 @@ export class TaskManagementComponent {
     //should be able to remove team member/extra user
     this.createListComponent(false, projectId, userImageData);
 
+    let taskPerUser =  this.taskByUser().at(index).taskPerUser;
+    let $userImageData = this.taskByUser().at(index).userImageData;
+
     if (this.listDataComponent)
       this.listDataComponent.instance.emitChosenUser.pipe(first()).subscribe((userData: {id: any, isAssignedToTeam: boolean, img: string}) => {
         console.log(userData)
         this.taskByUser().at(index).userImageData =
-          this.taskByUser().at(index).userImageData.filter((userInfo: {id: any, isAssignedToTeam: boolean, img: string}) => userInfo.id !== userData.id);
+          $userImageData.filter((userInfo: {id: any, isAssignedToTeam: boolean, img: string}) => userInfo.id !== userData.id);
 
+        this.taskByUser().at(index).taskPerUser =
+          taskPerUser.filter(($userData: taskPerUser) => $userData.id !== userData.id);
         //if (userData) this.users.set(users.users);
         this.closeBottomSheet()
       });
@@ -208,18 +254,22 @@ export class TaskManagementComponent {
     // code any removal from team updates team db, removal from extra updates project db "assignedUser"
     this.createListComponent(true, projectId, userImageData);
 
-    if (this.listDataComponent)
-      this.listDataComponent.instance.emitChosenUser.pipe(first()).subscribe((userData: {id: any, img: string}) => {
-        console.log(userData)
-        this.taskByUser().at(index).userImageData.push(userData);
+    let taskPerUser =  this.taskByUser().at(index).taskPerUser;
+    const $userImageData = this.taskByUser().at(index).userImageData;
 
-        //if (userData) this.users.set(users.users);
+    if (this.listDataComponent)
+      this.listDataComponent.instance.emitChosenUser.pipe(first()).subscribe((userData: {id: any, isAssignedToTeam: boolean, img: string}) => {
+
+        $userImageData.push(userData);
+
+        //update dropdown section
+        taskPerUser = this.consolidateUsersAssignedWithTaskOrWithoutTask(taskPerUser, $userImageData);
+
+        console.log(this.taskByUser())
+
         this.closeBottomSheet()
       });
     //this.listDataComponent.setInput("users", this.users());
-    //this.listDataComponent.instance.
-    //this.projects.set()
-    //noBgBorder: InputSignal<boolean>  = input<boolean>(false);
 
     this.overlay.nativeElement.style.display = 'flex';
     this._bottomSheet.nativeElement.style.bottom = '0';

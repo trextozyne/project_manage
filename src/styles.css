@@ -700,7 +700,11 @@ button, a {
   margin: 0;
 }
 
-.project-box-dropdown .participant-name {
+.project-box-dropdown .participant-tasks::before {
+  content: 'works on: ';
+}
+
+.project-box-dropdown .participant-name,  .project-box-dropdown .participant-tasks {
   max-width: inherit;
   margin: 0 auto;
   overflow: hidden;
@@ -708,13 +712,21 @@ button, a {
   text-overflow: ellipsis;
 }
 
-.project-box-dropdown span.completed {
-  float: right;
+.project-box-dropdown .participant-tasks {
+  text-wrap: wrap;
+  margin-bottom: 5px;
+}
+
+.project-box-dropdown .participant-tasks, .project-box-dropdown span.completed {
   color: #4A4A4A;
   opacity: 0.7;
   font-size: 12px;
   line-height: 16px;
   font-weight: 400 !important;
+}
+
+.project-box-dropdown span.completed {
+  float: right;
 }
 
 .project-box-dropdown .progress {

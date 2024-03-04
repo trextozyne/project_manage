@@ -4,6 +4,7 @@
   <div class="project-box" appRandomBackgroundStyle>
     <ng-content></ng-content>
   </div>
+
   <div class="project-box-dropdown" appRandomBackgroundStyle>
     <div class="project-user-list">
       <mat-accordion>
@@ -23,22 +24,33 @@
             </div>
             }
           </mat-expansion-panel-header>
-          <div class="dropdown-participant">
-            <div class="dropdown-contain-participant">
-              <img alt="participant" src="/assets/images/2.avif">
-            </div>
-            <div class="box-progress-wrapper">
-              <div class="position-progress-wrapper">
-                <p class="participant-name">Aybuke Cailinlingusd</p>
-                <p class="box-progress-header completed">
-                  Completed
-                  <span class="completed">2 of 3</span>
-                </p>
-                <p class="box-progress-header progress">Progress</p>
-                <app-progress-bar [progress_count]="50"></app-progress-bar>
+            @for (userData of taskPerUser(); track userData.id;) {
+              <div class="dropdown-participant">
+                <div class="dropdown-contain-participant">
+                  <img alt="participant" [src]="userData.imgPath">
+                </div>
+                <div class="box-progress-wrapper">
+                  <div class="position-progress-wrapper">
+                    <p class="participant-name">{{userData.name}}</p>
+
+                    <p class="participant-tasks">
+                      @for (tasks of userData.userTask; track tasks.taskStage) {
+                        {{tasks.taskStage}},
+                      }
+                      @empty{
+                        Not Assigned Tasks Yet
+                      }
+                    </p>
+                    <p class="box-progress-header completed">
+                      Completed
+                      <span class="completed">{{userData.completedTasks}} of {{userData.totalTasks}}</span>
+                    </p>
+                    <p class="box-progress-header progress">Progress</p>
+                    <app-progress-bar [progress_count]="userData.progressPercentage"></app-progress-bar>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
+            }
         </mat-expansion-panel>
       </mat-accordion>
     </div>

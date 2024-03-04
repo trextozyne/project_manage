@@ -1,22 +1,30 @@
 import {effect, inject, Injectable} from '@angular/core';
 import {HttpClient} from "@angular/common/http";
 import {Project} from "../../models/project";
-import {catchError, map, reduce} from "rxjs/operators";
+import {catchError, first, map, reduce} from "rxjs/operators";
 import {Tasks} from "../../models/tasks";
 import {Observable, from, ReplaySubject} from "rxjs";
 import {UserProgress} from "../../models/user-progress";
+import {UsersService} from "../users/users.service";
 import {User} from "../../models/user";
 
 export interface Projects {
   projects: Project[];
 }
 
+export interface taskPerUser  {
+  id: string, name: string, imgPath: string,
+  userTask: { taskStage: string, dateAssigned: string }[],
+  completedTasks: number, totalTasks: number, progressPercentage: number
+}
+
+
 @Injectable({
   providedIn: 'root'
 })
 export class ProjectsService {
   http = inject(HttpClient)
-  //private projectDataCache$: Observable<Projects> = new Observable<Projects>();
+  userService = inject(UsersService);
   private projectDataCache$ = new ReplaySubject<Projects>(1);
 
   constructor() {
@@ -51,6 +59,33 @@ export class ProjectsService {
     return this.projectDataCache$.pipe(
       map((projects: Projects) => projects && projects.projects && projects.projects.find(project => project.projectId === id))
     );
+  }
+
+  getTaskPerUser(tasks: Tasks[], $user: UserProgress) {
+    let $tasksPerUser = [] as taskPerUser[];
+    const tasksPerUser: taskPerUser = {} as any;
+    this.userService.getUserById($user.userId).pipe(first()).subscribe((_user: User) => {
+      tasksPerUser.id = _user.id;
+      tasksPerUser.name = _user.name;
+      tasksPerUser.imgPath = '/assets/images/' + _user.imagePath;
+      tasksPerUser.completedTasks = $user.completedTasks;
+      tasksPerUser.totalTasks = $user.totalTasks;
+      tasksPerUser.progressPercentage = $user.progressPercentage;
+      tasksPerUser.userTask = [];
+
+      $user.task.forEach(_userTask => {
+        tasks.forEach((_task: Tasks) => {
+          const matchingTask = _task.task.find($task => $task && _userTask && $task.id === _userTask.id);
+          if (matchingTask) {
+            tasksPerUser.userTask.push({taskStage: matchingTask.stage, dateAssigned: _userTask.dateAssigned});
+          }
+        });
+      });
+
+      $tasksPerUser.push(tasksPerUser)
+    });
+
+    return $tasksPerUser;
   }
 
   getUserLevelTask(tasks: Tasks[], userTask: { id: any; dateAssigned: string; dateCompleted: string }[]) {

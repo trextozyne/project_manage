@@ -97,6 +97,9 @@
               @for (image of userData.userImageData; track image.img) {
                 <img [src]="image.img" alt="participant">
               }
+              @empty {
+                <img src="/assets/images/team.png" alt="participant">
+              }
           </div>
           <app-button [color]="'#ff942e'" [participant]="true" (onClick)="onAddParticipants(index, userData.project$?.projectId, userData.userImageData, $event)">
             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="feather feather-plus">

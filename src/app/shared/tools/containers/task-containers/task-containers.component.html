@@ -8,7 +8,7 @@
   <div class="project-box-dropdown" appRandomBackgroundStyle>
     <div class="project-user-list">
       <mat-accordion>
-        <mat-expansion-panel
+        <mat-expansion-panel #mat_exp="matExpansionPanel"
           (opened)="panelOpenState = true"
           (closed)="panelOpenState = false"
           appRandomBackgroundStyle>
@@ -25,7 +25,7 @@
             }
           </mat-expansion-panel-header>
             @for (userData of taskPerUser(); track userData.id;) {
-              <div class="dropdown-participant">
+              <div class="dropdown-participant" #participants>
                 <div class="dropdown-contain-participant">
                   <img alt="participant" [src]="userData.imgPath">
                 </div>
@@ -50,6 +50,9 @@
                   </div>
                 </div>
               </div>
+            }
+            @empty {
+              <p style="text-align: center;">No Users are assigned to this project yet</p>
             }
         </mat-expansion-panel>
       </mat-accordion>

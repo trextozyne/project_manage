@@ -3,7 +3,7 @@ import {CommonModule} from "@angular/common";
 import {RandomBackgroundStyleDirective} from "../../../Directives/random-background-style.directive";
 import {MatExpansionModule, MatExpansionPanel} from "@angular/material/expansion";
 import {ProgressBarComponent} from "../../progress-bar/progress-bar.component";
-import {taskPerUser} from "../../../services/projects/projects.service";
+import {TaskPerUser} from "../../../models/taskPerUser";
 
 @Component({
   selector: 'app-task-containers',
@@ -20,7 +20,7 @@ export class TaskContainersComponent {
 
   // ==for single user  dropdown===
   userImages = input<{id: string, isAssignedToTeam: boolean, img: string}[]>();
-  taskPerUser = input<taskPerUser[]>();
+  taskPerUser = input<TaskPerUser[]>();
 
   ngOnChanges() {
     // Check if the element array is empty and toggle the expansion panel accordingly

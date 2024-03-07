@@ -838,7 +838,7 @@ button, a {
   /*--prevent img from shrinking and overlapping when no space--*/
   flex-shrink: 0;
   /*--prevent images from tipping out---*/
-  max-width: 100%;
+  /*max-width: 100%;*/
 }
 .participants img:not(:first-child) {
   margin-left: -8px;

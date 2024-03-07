@@ -10,6 +10,7 @@ import {BorderBottomEffectDirective} from "../../../../Directives/border-bottom-
 import {first, map, switchMap} from "rxjs/operators";
 import {of} from "rxjs";
 import {toObservable} from "@angular/core/rxjs-interop";
+import {TaskPerUser} from "../../../../models/taskPerUser";
 
 @Component({
   selector: 'app-list-data-wrapper',
@@ -57,22 +58,39 @@ export class ListDataWrapperComponent {
   onUserClick(userData: {id: any, isAssignedToTeam: boolean, img: string}, event: MouseEvent): void {
     this.emitChosenUser.emit(userData);
 
+    event.preventDefault();
+  }
+
+  updateProject(selectedUserTasks: TaskPerUser[]) {
+    debugger;
     const projectId$ = of(this.projectId());
     console.log("isUserToTeam", this.isUserToTeam())
     //if is add user to team fxn else remove user from team func
     //send changes to service to add user changes to Team or Single User
     if (this.isAddUser())
       if (this.isUserToTeam())
-        projectId$.pipe(first()).subscribe(id => this.projectService.addUserToAssignedTeams(id));
+        projectId$.pipe(first()).subscribe(id => this.projectService.addUserToAssignedTeams(id, selectedUserTasks));
       else
-        projectId$.pipe(first()).subscribe(id => this.projectService.addUserToAssignedUsers(id));
+        projectId$.pipe(first()).subscribe(id => this.projectService.addUserToAssignedUsers(id, selectedUserTasks));
     else
       if (this.isUserToTeam())
-        projectId$.pipe(first()).subscribe(id => this.projectService.removeUserFromAssignedTeams(id));
+        projectId$.pipe(first()).subscribe(id => this.projectService.removeUserFromAssignedTeams(id, selectedUserTasks));
       else
-        projectId$.pipe(first()).subscribe(id => this.projectService.removeUserFromAssignedUsers(id));
+        projectId$.pipe(first()).subscribe(id => this.projectService.removeUserFromAssignedUsers(id, selectedUserTasks));
+  }
 
 
-    event.preventDefault();
+  updateProjectAssignmentHistory(selectedUserTasks: TaskPerUser[]) {
+    debugger;
+    const projectId$ = of(this.projectId());
+    console.log("isUserToTeam", this.isUserToTeam())
+    if (this.isAddUser())
+      if (this.isUserToTeam())
+        // repopulate the user task based on restored from assignment history data
+        projectId$.pipe(first()).subscribe(id => this.projectService.repopulateUserTaskWithHistory(id, selectedUserTasks));
+    else
+      if (this.isUserToTeam())
+        // insert to assignment history arry
+        projectId$.pipe(first()).subscribe(id => this.projectService.updateAssignmentHistoryWithRemovedUser(id, selectedUserTasks));
   }
 }

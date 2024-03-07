@@ -7,17 +7,11 @@ import {Observable, from, ReplaySubject} from "rxjs";
 import {UserProgress} from "../../models/user-progress";
 import {UsersService} from "../users/users.service";
 import {User} from "../../models/user";
+import {TaskPerUser} from "../../models/taskPerUser";
 
 export interface Projects {
   projects: Project[];
 }
-
-export interface taskPerUser  {
-  id: string, name: string, imgPath: string,
-  userTask: { taskStage: string, dateAssigned: string }[],
-  completedTasks: number, totalTasks: number, progressPercentage: number
-}
-
 
 @Injectable({
   providedIn: 'root'
@@ -61,13 +55,19 @@ export class ProjectsService {
     );
   }
 
-  getTaskPerUser(tasks: Tasks[], $user: UserProgress) {
-    let $tasksPerUser = [] as taskPerUser[];
-    const tasksPerUser: taskPerUser = {} as any;
+  getTaskPerUser(project: { projectId: any; projectName: string }, tasks: Tasks[], $user: UserProgress,
+                 projectTask: { tasksTaskId: any; tasksTaskName: any }) {
+    let $tasksPerUser = [] as TaskPerUser[];
+    const tasksPerUser: TaskPerUser = {} as any;
     this.userService.getUserById($user.userId).pipe(first()).subscribe((_user: User) => {
+      tasksPerUser.projectId = project.projectId;
+      tasksPerUser.projectName = project.projectName;
       tasksPerUser.id = _user.id;
       tasksPerUser.name = _user.name;
       tasksPerUser.imgPath = '/assets/images/' + _user.imagePath;
+      tasksPerUser.tasksTaskId = projectTask.tasksTaskId;
+      tasksPerUser.tasksTaskName = projectTask.tasksTaskName;
+      tasksPerUser.assigned = $user.assigned;
       tasksPerUser.completedTasks = $user.completedTasks;
       tasksPerUser.totalTasks = $user.totalTasks;
       tasksPerUser.progressPercentage = $user.progressPercentage;
@@ -130,19 +130,27 @@ export class ProjectsService {
     )
   }
 
-  addUserToAssignedTeams(id: any) {
+  addUserToAssignedTeams(id: any, selectedUserTasks: TaskPerUser[]) {
     console.log("added to team for projectId", id)
   }
 
-  addUserToAssignedUsers(id: any) {
+  addUserToAssignedUsers(id: any, selectedUserTasks: TaskPerUser[]) {
     console.log("added to single-user for projectId", id)
   }
 
-  removeUserFromAssignedTeams(id: any) {
+  removeUserFromAssignedTeams(id: any, selectedUserTasks: TaskPerUser[]) {
     console.log("removed from team for projectId", id)
   }
 
-  removeUserFromAssignedUsers(id: any) {
+  removeUserFromAssignedUsers(id: any, selectedUserTasks: TaskPerUser[]) {
     console.log("removed from single-user for projectId", id)
+  }
+
+  repopulateUserTaskWithHistory(id: any, selectedUserTasks: TaskPerUser[]) {
+
+  }
+
+  updateAssignmentHistoryWithRemovedUser(id: any, selectedUserTasks: TaskPerUser[]) {
+
   }
 }

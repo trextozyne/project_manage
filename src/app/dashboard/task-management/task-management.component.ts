@@ -14,7 +14,7 @@ import {ReactiveFormsModule} from "@angular/forms";
 import {ProgressBarComponent} from "../../shared/tools/progress-bar/progress-bar.component";
 import {TaskContainersComponent} from "../../shared/tools/containers/task-containers/task-containers.component";
 import {ButtonComponent} from "../../shared/tools/button/button.component";
-import {Projects, ProjectsService, taskPerUser} from "../../shared/services/projects/projects.service";
+import {Projects, ProjectsService} from "../../shared/services/projects/projects.service";
 import {Project} from "../../shared/models/project";
 import {DaymonthpipePipe} from "../../shared/pipes/daymonthpipe.pipe";
 import {Users, UsersService} from "../../shared/services/users/users.service";
@@ -27,6 +27,9 @@ import {FullDatePipePipe} from "../../shared/pipes/full-date-pipe.pipe";
 import {DaysleftPipe} from "../../shared/pipes/daysleft.pipe";
 import {ListDataWrapperComponent} from "../../shared/tools/containers/list-containers/list-data-wrapper/list-data-wrapper.component";
 import {RandomBackgroundStyleDirective} from "../../shared/Directives/random-background-style.directive";
+import {TaskPerUser} from "../../shared/models/taskPerUser";
+import {DialogComponent} from "../../shared/tools/dialog/dialog/dialog.component";
+import {MatDialog} from "@angular/material/dialog";
 
 
 
@@ -45,14 +48,15 @@ abstract class TypedComponentRef<ComponentClass> extends ComponentRef<ComponentC
   styleUrl: './task-management.component.css'
 })
 export class TaskManagementComponent {
-
-  @ViewChild("projectBoxes", {static: true}) projectBoxes!: ElementRef;
-  isGridView: boolean = true;
-
   renderer = inject(Renderer2);
   projectService = inject(ProjectsService);
   userService = inject(UsersService);
   teamService = inject(TeamsService);
+  dialog = inject(MatDialog);
+
+  @ViewChild("projectBoxes", {static: true}) projectBoxes!: ElementRef;
+  isGridView: boolean = true;
+
 
   isTeamMember: boolean = true;
 
@@ -101,7 +105,7 @@ export class TaskManagementComponent {
     const _taskByUser: any[] = [];
     if (this.projects().length) {
       this.projects().forEach((project: Project) => {
-        const taskPerUser: taskPerUser[] = [];
+        const taskPerUser: TaskPerUser[] = [];
 
         const userObj = {
           project$: undefined as any,
@@ -142,12 +146,12 @@ export class TaskManagementComponent {
           });
 
           const projectTask = this.projectService.getProjectLevelTask(user.taskId, project.tasks);
-          userObj.projectTask = {name: projectTask?.name, startDate: projectTask?.startDate, endDate: projectTask?.endDate}
+          userObj.projectTask = {tasksTaskId: projectTask?.taskId, name: projectTask?.name, startDate: projectTask?.startDate, endDate: projectTask?.endDate}
 
           userObj.userTask.push(...this.projectService.getUserLevelTask(project.tasks, user.task));
 
           taskPerUser.push(
-            ...this.projectService.getTaskPerUser(project.tasks, user)
+            ...this.projectService.getTaskPerUser({projectId: project.projectId, projectName: project.name}, project.tasks, user, {tasksTaskId: projectTask?.taskId, tasksTaskName: projectTask?.name})
           );
         })
 
@@ -163,30 +167,49 @@ export class TaskManagementComponent {
     return _taskByUser;
   });
 
-  private consolidateUsersAssignedWithTaskOrWithoutTask(tasksPerUser: taskPerUser[], currentUserData: any[]) {
-    // Extract ids
-    const taskPerUserIds = new Set(tasksPerUser.map((user: taskPerUser) => user.id));
+  private consolidateUsersAssignedWithTaskOrWithoutTask(tasksPerUser: TaskPerUser[], currentUserData: any[]) {
+    // Extract ids and other info
+    const taskPerUsers = new Set(tasksPerUser.map((user: TaskPerUser) => ({
+      id: user.id,
+      projectId: user.projectId,
+      projectName: user.projectName,
+      tasksTaskId: user.tasksTaskId,
+      tasksTaskName: user.tasksTaskName
+    })));
 
     // Find ids in currentUserData that are not in tasksPerUser
     const idsToAdd = currentUserData
-      .filter((user: User) => !taskPerUserIds.has(user.id))
-      .map((user: User) => user.id);
+      .filter((user: User) => !taskPerUsers.has(user.id))
+      .map((user: User) => ({
+        id: user.id,
+        projectId: Array.from(taskPerUsers)[0]?.projectId,
+        projectName: Array.from(taskPerUsers)[0]?.projectName,
+        tasksTaskId: Array.from(taskPerUsers)[0]?.tasksTaskId,
+        tasksTaskName: Array.from(taskPerUsers)[0]?.tasksTaskName
+      }));
 
-    // Add missing ids to tasksPerUser with empty properties
+    // Add missing data by ids to tasksPerUser with empty properties
     from(idsToAdd).pipe(
-        switchMap(id => this.userService.getUserById(id)
-        ),
-        map((user: User) => user)
-      ).subscribe(data => {
-        tasksPerUser.push({
-          id: data.id,
-          name: data.name,
-          imgPath: '/assets/images/' + data.imagePath,
-          userTask: [],
-          completedTasks: 0,
-          totalTasks: 0,
-          progressPercentage: 0
-        });
+      switchMap((p: { id: any, projectId: any, tasksTaskId: any, projectName: string, tasksTaskName: string }) =>
+        this.userService.getUserById(p.id).pipe(
+          map(user => ({ user, projectId: p.projectId, tasksTaskId: p.tasksTaskId , projectName: p.projectName, tasksTaskName: p.tasksTaskName }))
+        )
+      )
+    ).subscribe(data => {
+      tasksPerUser.push({
+        projectId: data.projectId,
+        projectName: data.projectName,
+        id: data.user.id,
+        name: data.user.name,
+        imgPath: '/assets/images/' + data.user.imagePath,
+        tasksTaskId: data.tasksTaskId,
+        tasksTaskName: data.tasksTaskName,
+        assigned: false,
+        userTask: [],
+        completedTasks: 0,
+        totalTasks: 0,
+        progressPercentage: 0
+      });
     })
 
     return tasksPerUser;
@@ -227,18 +250,32 @@ export class TaskManagementComponent {
     //should be able to remove team member/extra user
     this.createListComponent(false, projectId, userImageData);
 
-    let taskPerUser =  this.taskByUser().at(index).taskPerUser;
+    let taskPerUser: TaskPerUser[] =  this.taskByUser().at(index).taskPerUser;
     let $userImageData = this.taskByUser().at(index).userImageData;
 
     if (this.listDataComponent)
       this.listDataComponent.instance.emitChosenUser.pipe(first()).subscribe((userData: {id: any, isAssignedToTeam: boolean, img: string}) => {
         console.log(userData)
-        this.taskByUser().at(index).userImageData =
-          $userImageData.filter((userInfo: {id: any, isAssignedToTeam: boolean, img: string}) => userInfo.id !== userData.id);
+        const getSelectedUserTasks = taskPerUser.filter(user => user.id === userData.id);
 
-        this.taskByUser().at(index).taskPerUser =
-          taskPerUser.filter(($userData: taskPerUser) => $userData.id !== userData.id);
-        //if (userData) this.users.set(users.users);
+        if (getSelectedUserTasks.some(user=> user.assigned && user.completedTasks > 0)) {
+          const dialogRef = this.dialog.open(DialogComponent, {
+            data: {taskPerUser: getSelectedUserTasks[0]}
+          });
+
+          dialogRef.afterClosed().subscribe(result => {
+            if (result) {
+              this.removeUserAssignedToProjectTask(index, $userImageData, getSelectedUserTasks, taskPerUser);
+              //this.listDataComponent.instance.updateProject();
+
+              this.listDataComponent.instance.updateProjectAssignmentHistory(getSelectedUserTasks)
+            }
+          });
+        } else {
+          this.removeUserAssignedToProjectTask(index, $userImageData, getSelectedUserTasks, taskPerUser);
+
+          this.listDataComponent.instance.updateProject(getSelectedUserTasks);
+        }
         this.closeBottomSheet()
       });
 
@@ -249,23 +286,71 @@ export class TaskManagementComponent {
     $event.preventDefault();
   }
 
+  private removeUserAssignedToProjectTask(index: number, $userImageData: {id: any, isAssignedToTeam: boolean, img: string}[], getSelectedUserTasks: TaskPerUser[], taskPerUser: TaskPerUser[]) {
+
+    this.taskByUser().at(index).userImageData =
+      $userImageData.filter((userInfo: {id: any, isAssignedToTeam: boolean, img: string}) => getSelectedUserTasks.some(userData=> userInfo.id !== userData.id));
+
+    this.taskByUser().at(index).taskPerUser =
+      taskPerUser.filter(($userData: TaskPerUser) => getSelectedUserTasks.some(userData=> $userData.id !== userData.id));
+
+    // if the taskHistory dont change, dont save
+
+    this.projects().find(project=> getSelectedUserTasks.some(userData => project.projectId === userData.projectId))?.assignmentHistory.push(getSelectedUserTasks[0])
+  }
+
+  private updateUserProjectHistory(userHistory: TaskPerUser[], taskPerUserShell: TaskPerUser[]) {
+    return taskPerUserShell.map(user =>
+      userHistory.find($user => $user.id === user.id) || user
+    );
+  }
+
   onAddParticipants(index: number, projectId: any, userImageData: {id: any, isAssignedToTeam: boolean, img: string}[], $event: MouseEvent) {
     // there should be a tab for add to team, add as extra
     // code any removal from team updates team db, removal from extra updates project db "assignedUser"
     this.createListComponent(true, projectId, userImageData);
 
-    let taskPerUser =  this.taskByUser().at(index).taskPerUser;
+    let taskPerUser =  this.taskByUser().at(index).taskPerUser as TaskPerUser[];
     const $userImageData = this.taskByUser().at(index).userImageData;
 
     if (this.listDataComponent)
       this.listDataComponent.instance.emitChosenUser.pipe(first()).subscribe((userData: {id: any, isAssignedToTeam: boolean, img: string}) => {
-
+        debugger;
         $userImageData.push(userData);
 
-        //update dropdown section
-        taskPerUser = this.consolidateUsersAssignedWithTaskOrWithoutTask(taskPerUser, $userImageData);
+        const taskPerUserShell = this.consolidateUsersAssignedWithTaskOrWithoutTask(taskPerUser, [userData]);
 
-        console.log(this.taskByUser())
+        // check if userhistroy exist, perfor ops the proceed
+        //get that project by its id first then check the histroy
+        this.projectService.getProjectById(projectId).pipe(first()).subscribe(($project: Project | undefined) => {
+          const userHistory = $project && $project?.assignmentHistory.filter((userHistory: TaskPerUser) => userHistory.id === userData.id)
+
+          if (userHistory && userHistory.length > 0) {
+            const dialogRef = this.dialog.open(DialogComponent, {
+              data: {userHistory: userHistory}
+            });
+
+            dialogRef.afterClosed().subscribe(result => {
+              if (result) {
+                //where result is the index of history chosen, use index to select specific history to restore
+                //update dropdown section
+                taskPerUser = this.updateUserProjectHistory(userHistory, taskPerUserShell);
+
+                this.taskByUser().at(index).taskPerUser = taskPerUser;
+                //this.listDataComponent.instance.updateProject();
+
+                this.listDataComponent.instance.updateProjectAssignmentHistory(taskPerUser)
+                console.log(this.taskByUser())
+              }
+            });
+          } else if (userHistory && userHistory.length === 0) {
+            taskPerUser = this.updateUserProjectHistory(userHistory, taskPerUserShell);
+
+            this.taskByUser().at(index).taskPerUser = taskPerUser;
+
+            this.listDataComponent.instance.updateProject(taskPerUser);
+          }
+        });
 
         this.closeBottomSheet()
       });

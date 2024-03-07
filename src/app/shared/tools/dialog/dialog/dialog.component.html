@@ -1,0 +1,14 @@
+
+<mat-dialog-content>
+  @if (data.hasOwnProperty("taskPerUser")) {
+    <p>This assigned user {{data.taskPerUser.name}} has completed some task. Are you still willing to proceed with removal?</p>
+    <p>Note: Removed users have a history & can be re-assigned at any point in time</p>
+  } @else {
+    This user has an existing history with this project. Want to restore it?
+    {{data.userHistory | json}}
+  }
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>No</button>
+  <button mat-button [mat-dialog-close]="true" cdkFocusInitial>Yes</button>
+</mat-dialog-actions>

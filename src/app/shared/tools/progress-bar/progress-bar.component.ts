@@ -1,6 +1,5 @@
-import {Component, input, Input} from '@angular/core';
+import {Component, computed, input} from '@angular/core';
 import {CommonModule} from "@angular/common";
-import {FullDatePipePipe} from "../../pipes/full-date-pipe.pipe";
 import {ProgressCountModifierPipe} from "../../pipes/progress-count-modifier.pipe";
 import {RandomBackgroundStyleDirective} from "../../Directives/random-background-style.directive";
 
@@ -12,13 +11,6 @@ import {RandomBackgroundStyleDirective} from "../../Directives/random-background
   styleUrl: './progress-bar.component.css'
 })
 export class ProgressBarComponent {
-  // @Input() progress_count: any
   progress_count = input.required<number>()
-  width: number = 0;
-
-  ngOnInit() {
-    setTimeout(()=>{
-      this.width = this.progress_count();
-    }, 2000)
-  }
+  width = computed(() => this.progress_count());
 }

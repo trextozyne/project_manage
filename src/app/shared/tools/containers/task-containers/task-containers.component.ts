@@ -23,6 +23,8 @@ export class TaskContainersComponent {
   taskPerUser = input<TaskPerUser[]>();
 
   ngOnChanges() {
+    // find all progress bar:
+
     // Check if the element array is empty and toggle the expansion panel accordingly
     const isEmpty = this.participants && this.participants.length === 1;
 

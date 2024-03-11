@@ -25,7 +25,7 @@
             }
           </mat-expansion-panel-header>
             @for (userData of taskPerUser(); track userData.id;) {
-              <div class="dropdown-participant" #participants>
+              <div #dropdown class="dropdown-participant" #participants>
                 <div class="dropdown-contain-participant">
                   <img alt="participant" [src]="userData.imgPath">
                 </div>

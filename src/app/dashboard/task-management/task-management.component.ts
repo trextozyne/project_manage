@@ -19,7 +19,7 @@ import {Project} from "../../shared/models/project";
 import {DaymonthpipePipe} from "../../shared/pipes/daymonthpipe.pipe";
 import {Users, UsersService} from "../../shared/services/users/users.service";
 import {User} from "../../shared/models/user";
-import {Observable, from} from "rxjs";
+import {Observable, from, of, forkJoin} from "rxjs";
 import {TeamsService} from "../../shared/services/teams/teams.service";
 import {Team} from "../../shared/models/team";
 import {first, map, switchMap} from "rxjs/operators";
@@ -286,6 +286,30 @@ export class TaskManagementComponent {
     $event.preventDefault();
   }
 
+  private compareUserTaskHistory(userTaskHistory: any, selectedUserTasks: any): Observable<boolean> {
+    if (
+      (typeof userTaskHistory === 'object' && userTaskHistory !== null) &&
+      (typeof selectedUserTasks === 'object' && selectedUserTasks !== null)
+    ) {
+      const keys1 = Object.keys(userTaskHistory);
+      const keys2 = Object.keys(selectedUserTasks);
+
+      if (keys1.length !== keys2.length) {
+        return of(false);
+      }
+
+      const keyObservables: Observable<boolean>[] = keys1.map((key) => {
+        return this.compareUserTaskHistory(userTaskHistory[key], selectedUserTasks[key]);
+      });
+
+      return forkJoin(keyObservables).pipe(
+        map((results) => results.every((result) => result))
+      );
+    } else {
+      return of(userTaskHistory === selectedUserTasks);
+    }
+  }
+
   private removeUserAssignedToProjectTask(index: number, $userImageData: {id: any, isAssignedToTeam: boolean, img: string}[], getSelectedUserTasks: TaskPerUser[], taskPerUser: TaskPerUser[]) {
 
     this.taskByUser().at(index).userImageData =
@@ -295,8 +319,13 @@ export class TaskManagementComponent {
       taskPerUser.filter(($userData: TaskPerUser) => getSelectedUserTasks.some(userData=> $userData.id !== userData.id));
 
     // if the taskHistory dont change, dont save
-
-    this.projects().find(project=> getSelectedUserTasks.some(userData => project.projectId === userData.projectId))?.assignmentHistory.push(getSelectedUserTasks[0])
+    const userTaskHistory = this.projects().find(project=> getSelectedUserTasks.some(userData => project.projectId === userData.projectId))?.assignmentHistory;
+    this.compareUserTaskHistory(userTaskHistory, getSelectedUserTasks).pipe(first()).subscribe(result => {
+      if (!result && userTaskHistory) {
+        userTaskHistory.push(getSelectedUserTasks[0]);
+        //set the bgColor for pgBar in this user task container
+      }
+    })
   }
 
   private updateUserProjectHistory(userHistory: TaskPerUser[], taskPerUserShell: TaskPerUser[]) {

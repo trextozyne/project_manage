@@ -1,0 +1,51 @@
+<div #wrapper class="wrapper">
+  <div cdkDropList class="example-list" (cdkDropListDropped)="drop($event)"
+  >
+    <div class="example-box" *ngFor="let movie of movies;let i=index" cdkDrag
+         [cdkDragData]="movie"
+         (cdkDragStarted)="onDragStarted($event,i)"
+         (cdkDragEnded)="onDragEnded($event,i)"
+         (cdkDragMoved)="onDragMove($event)"
+
+         (mousedown)="setStyle($event)" >{{movie.title}}{{movie.text}}
+      <div  *cdkDragPreview class="example-box" [ngStyle]="style">
+        {{movie.title}}{{movie.text}}
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!--<table>-->
+<!--  <thead>-->
+<!--  <tr-->
+<!--    cdkDropList-->
+<!--    cdkDropListOrientation="horizontal"-->
+<!--    class="example-list"-->
+<!--    (cdkDropListDropped)="drop($event)"-->
+<!--    cdkDropListAutoScrollStep="10"-->
+<!--  >-->
+<!--    <th *ngFor="let column of columns" cdkDrag cdkDragLockAxis="x">-->
+<!--      {{column.text}}-->
+<!--    </th>-->
+<!--  </tr>-->
+<!--  </thead>-->
+<!--  <tbody-->
+<!--    cdkDropList-->
+<!--    cdkDropListOrientation="vertical"-->
+<!--    (cdkDropListDropped)="dropRow($event)"-->
+<!--    cdkDropListAutoScrollStep="10"-->
+<!--  >-->
+<!--  <tr cdkDrag *ngFor="let row of rows" cdkDragLockAxis="y">-->
+<!--    <div *cdkDragPreview class="my-custom-cdk-drag">-->
+<!--      <div *ngIf="nameColumn">-->
+<!--        {{row[nameColumn.key]}}-->
+<!--      </div>-->
+<!--      <div *ngIf="!nameColumn">-->
+<!--        {{row[columns[0].key]}}-->
+<!--      </div>-->
+<!--    </div>-->
+<!--    <td *ngFor="let column of columns">{{row[column.key]}}</td>-->
+<!--  </tr>-->
+<!--  </tbody>-->
+<!--</table>-->

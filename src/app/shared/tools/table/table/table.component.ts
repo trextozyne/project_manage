@@ -124,9 +124,9 @@ export class TableComponent implements OnInit {
 
       const nextEl = Math.round(top / elHeight);
       console.log("nextEl", nextEl)
-      if (top % elHeight === 0){
-        const nextEl = top / elHeight;
-        console.log("nextEl", nextEl)
+      if (nextEl !== 3) {
+        const el2 = document.getElementsByClassName('example-box')[nextEl] as HTMLElement;
+        el2.style.transform = `translate3d(0, ${-elHeight}px, 0)`;
       }
       console.log("going down")
     }else{
